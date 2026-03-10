@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>CatCat Demo Preview</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #0b3e35;
+        background:
+          radial-gradient(circle at top, rgba(151, 241, 105, 0.26), transparent 28%),
+          linear-gradient(180deg, #dff8ef 0%, #9edfc8 42%, #2ab38a 100%);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; min-height: 100vh; }
+      button, input { font: inherit; }
+      button { border: 0; cursor: pointer; }
+      .app-shell { min-height: 100vh; padding: 24px; display: flex; align-items: center; justify-content: center; }
+      .device-frame { width: min(100%, 980px); aspect-ratio: 1560 / 2440; min-height: 92vh; padding: 28px; display: flex; flex-direction: column; gap: 20px; border-radius: 40px; background: linear-gradient(180deg, rgba(255,255,255,0.62), rgba(240,255,250,0.16)); border: 1px solid rgba(255,255,255,0.54); box-shadow: 0 24px 80px rgba(17,40,36,0.24); backdrop-filter: blur(24px); overflow: hidden; position: relative; }
+      .top-bar,.panel-header,.claimed-header,.voice-header,.capture-actions,.chat-composer,.scene-hud,.hero-copy,.button-group { display: flex; align-items: center; }
+      .top-bar,.panel-header,.claimed-header,.voice-header,.capture-actions,.scene-hud,.chat-composer { justify-content: space-between; }
+      .top-bar h1,.panel-header h3,.claimed-header h4,.voice-header h3,.capture-actions h3,.hero-copy h2 { margin: 4px 0 0; }
+      .top-bar h1 { font-size: 32px; }
+      .eyebrow { margin: 0; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.7; }
+      .score-panel,.status-chip,.hero-badge,.slot-count { border-radius: 999px; font-size: 13px; }
+      .score-panel { padding: 12px 16px; background: rgba(255,255,255,0.6); display: flex; gap: 10px; align-items: center; }
+      .screen-stage { flex: 1; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 18px; min-height: 0; }
+      .scene-panel { position: relative; min-height: 0; border-radius: 32px; overflow: hidden; background: linear-gradient(180deg, rgba(240,255,252,0.78), rgba(182,240,214,0.5)); }
+      .scene-background { position: absolute; inset: 0; background: radial-gradient(circle at 30% 18%, rgba(255,255,255,0.88), transparent 25%), radial-gradient(circle at 80% 16%, rgba(151,241,105,0.3), transparent 18%), linear-gradient(180deg, rgba(244,255,250,0.9), rgba(192,241,215,0.5) 42%, rgba(42,179,138,0.2)); }
+      .scene-hud { position: absolute; top: 20px; left: 20px; right: 20px; z-index: 5; }
+      .status-chip,.hero-badge,.slot-count,.chip,.bubble-tag,.ghost-button,.primary-button,.mini-button,.mic-button { padding: 8px 14px; background: rgba(255,255,255,0.74); color: #0b3e35; border: 1px solid rgba(17,40,36,0.08); }
+      .status-chip.alt,.hero-badge,.primary-button,.voice-trigger,.mini-button,.mic-button { background: #112824; color: #f2fff6; }
+      .room-3d { position: absolute; inset: 88px 20px 96px; perspective: 1400px; transform-style: preserve-3d; }
+      .wall,.floor-grid,.window-panel,.furniture-block,.package-box { position: absolute; }
+      .wall-back { left: 18%; right: 18%; top: 10%; height: 34%; border-radius: 28px 28px 10px 10px; background: linear-gradient(180deg, rgba(250,255,246,0.95), rgba(225,251,230,0.86)); }
+      .wall-left,.wall-right { top: 18%; bottom: 24%; width: 18%; background: linear-gradient(180deg, rgba(230,255,244,0.95), rgba(165,219,197,0.62)); }
+      .wall-left { left: 14%; transform: skewY(16deg); border-radius: 22px 0 0 22px; }
+      .wall-right { right: 14%; transform: skewY(-16deg); border-radius: 0 22px 22px 0; }
+      .window-panel { left: 42%; top: 16%; width: 16%; height: 16%; border-radius: 20px; background: linear-gradient(180deg, rgba(199,255,229,0.95), rgba(255,255,255,0.72)); border: 8px solid rgba(255,255,255,0.72); }
+      .window-glow { position: absolute; inset: 0; display: block; border-radius: 12px; background: radial-gradient(circle, rgba(151,241,105,0.32), transparent 65%); animation: pulse 4s ease-in-out infinite; }
+      .floor-grid { left: 14%; right: 14%; bottom: 4%; height: 54%; border-radius: 24px; transform: rotateX(68deg); transform-origin: center bottom; background: linear-gradient(90deg, rgba(17,40,36,0.05) 1px, transparent 1px), linear-gradient(rgba(17,40,36,0.05) 1px, transparent 1px), linear-gradient(180deg, rgba(245,236,202,0.94), rgba(225,210,160,0.9)); background-size: 46px 46px, 46px 46px, 100% 100%; box-shadow: inset 0 0 0 1px rgba(17,40,36,0.06), 0 18px 34px rgba(17,40,36,0.16); }
+      .furniture-block { left: var(--left); top: var(--top); width: var(--width); height: var(--depth); transform: rotate(var(--rotate)); transform-origin: center; filter: drop-shadow(0 14px 12px rgba(17,40,36,0.22)); animation: slideUp 0.55s ease; }
+      .furniture-top { width: 100%; height: 100%; border-radius: 18px; background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 88%, white), var(--tone)); border: 1px solid rgba(17,40,36,0.08); position: relative; overflow: hidden; }
+      .furniture-top::after { content: ""; position: absolute; inset: 10% 14%; border-radius: 14px; border: 2px solid color-mix(in srgb, var(--accent) 60%, transparent); opacity: 0.55; }
+      .furniture-label { position: absolute; left: 8px; right: 8px; top: calc(100% + 6px); padding: 8px 10px; border-radius: 14px; background: rgba(255,255,255,0.78); display: grid; gap: 2px; backdrop-filter: blur(12px); }
+      .furniture-label strong { font-size: 12px; }
+      .furniture-label span { font-size: 10px; opacity: 0.72; }
+      .size-sm .furniture-top { border-radius: 14px; }
+      .size-lg .furniture-top { border-radius: 22px; }
+      .package-box { left: 46%; top: 50%; width: 130px; transform: translate(-50%, -50%) rotate(-14deg); animation: floaty 2.8s ease-in-out infinite; }
+      .package-lid { height: 18px; margin: 0 12px -3px; border-radius: 10px 10px 4px 4px; background: linear-gradient(180deg, #c08d4f, #a7723e); }
+      .package-body { padding: 16px; border-radius: 16px; background: linear-gradient(180deg, #d6a766, #bf8647); color: white; display: grid; gap: 6px; box-shadow: 0 14px 24px rgba(17,40,36,0.24); }
+      .package-box.ready .package-body { background: linear-gradient(180deg, #97f169, #2ab38a); }
+      .package-body strong { font-size: 16px; }
+      .package-body span,.package-body small,.hero-copy p,.bubble small,.voice-trigger small,.chat-bubble,.capture-actions p { line-height: 1.45; }
+      .hero-copy { position: absolute; left: 24px; right: 24px; bottom: 22px; z-index: 5; justify-content: flex-start; gap: 12px; flex-wrap: wrap; }
+      .hero-copy h2 { width: 100%; font-size: 28px; }
+      .hero-copy p { width: min(80%, 520px); margin: 0; color: rgba(11,62,53,0.82); }
+      .cat-bubble { position: absolute; left: 24px; bottom: 24px; z-index: 6; display: flex; align-items: center; gap: 12px; padding: 12px 18px 12px 12px; border-radius: 999px; background: rgba(255,255,255,0.86); box-shadow: 0 12px 28px rgba(17,40,36,0.14); animation: pulse 3.2s ease-in-out infinite; }
+      .cat-bubble.compact { bottom: 172px; }
+      .cat-avatar { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(180deg, #112824, #2ab38a); color: #f6fff6; font-weight: 700; }
+      .cat-text { max-width: 200px; text-align: left; color: #0b3e35; font-weight: 600; }
+      .control-panel { padding: 20px; border-radius: 30px; background: rgba(248,255,252,0.82); box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 18px 40px rgba(17,40,36,0.12); display: grid; gap: 16px; transform: translateY(130%); opacity: 0; transition: transform 0.45s ease, opacity 0.45s ease; }
+      .control-panel.visible { transform: translateY(0); opacity: 1; }
+      .ghost-button,.primary-button,.mini-button,.chip,.mic-button { border-radius: 999px; transition: transform 0.2s ease, opacity 0.2s ease; }
+      .ghost-button:hover,.primary-button:hover,.mini-button:hover,.chip:hover,.mic-button:hover,.bubble:hover,.voice-trigger:hover { transform: translateY(-2px); }
+      .bubble-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .bubble { min-height: 126px; padding: 16px; border-radius: 24px; background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(238,255,247,0.8)); border: 1px solid rgba(17,40,36,0.08); display: grid; align-content: start; gap: 8px; text-align: left; box-shadow: 0 10px 22px rgba(17,40,36,0.08); }
+      .bubble.action { background: linear-gradient(180deg, rgba(17,40,36,0.96), rgba(42,179,138,0.86)); color: white; }
+      .bubble-icon { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(151,241,105,0.18); font-size: 22px; }
+      .bubble strong,.voice-trigger strong { font-size: 16px; }
+      .bubble-tag { justify-self: start; padding-inline: 10px; border-radius: 999px; font-size: 11px; background: rgba(151,241,105,0.22); }
+      .recommendation { animation: pulse 3.6s ease-in-out infinite; }
+      .second-row { align-items: stretch; }
+      .empty-slot { grid-column: 1 / -1; min-height: 98px; border-radius: 24px; border: 1px dashed rgba(17,40,36,0.14); display: grid; place-items: center; background: rgba(255,255,255,0.35); }
+      .photo { position: relative; }
+      .photo.generating { background: linear-gradient(180deg, rgba(255,239,213,0.95), rgba(245,216,171,0.82)); }
+      .photo.ready { background: linear-gradient(180deg, rgba(215,255,217,0.98), rgba(151,241,105,0.46)); }
+      .photo.claimed { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(221,249,238,0.86)); }
+      .photo-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+      .mini-button { padding: 8px 12px; }
+      .mini-button.ghost { background: rgba(255,255,255,0.76); color: #0b3e35; }
+      .voice-trigger { margin-top: 4px; padding: 16px 18px; border-radius: 24px; display: flex; align-items: center; gap: 14px; text-align: left; position: relative; overflow: hidden; }
+      .voice-pulse,.mic-wave { width: 18px; height: 18px; border-radius: 50%; display: inline-block; background: #97f169; box-shadow: 0 0 0 0 rgba(151,241,105,0.6); animation: ripple 1.8s infinite; }
+      .modal-scrim,.voice-sheet-wrap { position: fixed; inset: 0; background: rgba(6,30,26,0.32); display: none; place-items: center; padding: 24px; z-index: 20; }
+      .modal-scrim.visible,.voice-sheet-wrap.visible { display: grid; }
+      .capture-card { width: min(96vw, 760px); border-radius: 32px; overflow: hidden; background: rgba(245,255,251,0.96); box-shadow: 0 26px 60px rgba(17,40,36,0.24); }
+      .camera-preview { height: 420px; background: linear-gradient(135deg, rgba(17,40,36,0.92), rgba(42,179,138,0.76)), radial-gradient(circle at center, rgba(151,241,105,0.32), transparent 42%); display: grid; place-items: center; }
+      .capture-target { width: 58%; aspect-ratio: 1; border-radius: 28px; border: 2px dashed rgba(255,255,255,0.72); display: grid; place-items: center; color: white; }
+      .capture-actions { padding: 20px 24px 24px; gap: 16px; }
+      .button-group { gap: 10px; }
+      .voice-sheet-wrap { align-items: end; }
+      .voice-sheet { width: min(100%, 980px); max-height: 72vh; padding: 20px; border-radius: 28px 28px 0 0; background: rgba(248,255,252,0.96); box-shadow: 0 -24px 60px rgba(17,40,36,0.2); display: grid; gap: 16px; animation: sheetUp 0.32s ease; }
+      .chip-row { display: flex; gap: 10px; flex-wrap: wrap; }
+      .chat-stream { min-height: 220px; max-height: 32vh; overflow: auto; display: grid; gap: 10px; padding-right: 6px; }
+      .chat-bubble { max-width: min(88%, 680px); padding: 12px 14px; border-radius: 20px; }
+      .chat-bubble.assistant { background: rgba(17,40,36,0.08); }
+      .chat-bubble.user { justify-self: end; background: #112824; color: #f4fff7; }
+      .chat-composer { gap: 12px; }
+      .chat-composer input { flex: 1; min-width: 0; padding: 14px 16px; border-radius: 18px; border: 1px solid rgba(17,40,36,0.12); background: rgba(255,255,255,0.86); }
+      @keyframes pulse { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-2px); } }
+      @keyframes ripple { 0%{ box-shadow: 0 0 0 0 rgba(151,241,105,0.55); } 70%{ box-shadow: 0 0 0 14px rgba(151,241,105,0); } 100%{ box-shadow: 0 0 0 0 rgba(151,241,105,0); } }
+      @keyframes floaty { 0%,100%{ transform: translate(-50%, -50%) rotate(-14deg) translateY(0); } 50%{ transform: translate(-50%, -50%) rotate(-14deg) translateY(-10px); } }
+      @keyframes slideUp { from{ opacity: 0; transform: rotate(var(--rotate)) translateY(12px) scale(0.96); } to{ opacity: 1; transform: rotate(var(--rotate)) translateY(0) scale(1); } }
+      @keyframes sheetUp { from{ opacity: 0; transform: translateY(28px); } to{ opacity: 1; transform: translateY(0); } }
+      @media (max-width: 900px) { .app-shell { padding: 12px; } .device-frame { width: 100%; min-height: 100vh; border-radius: 0; padding: 16px; } .top-bar h1,.hero-copy h2 { font-size: 24px; } .room-3d { inset: 84px 10px 132px; } .bubble-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cat-bubble.compact { bottom: 264px; } .chat-composer { flex-wrap: wrap; } .chat-composer input { width: 100%; } }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell"><div class="device-frame"><header class="top-bar"><div><p class="eyebrow">CatCat AI Home Demo</p><h1>快捷添加家具页</h1></div><div class="score-panel"><span>房间完整度</span><strong id="roomScore">48%</strong></div></header><main class="screen-stage"><section class="scene-panel"><div class="scene-background"></div><div class="scene-hud"><div class="status-chip">4×4 卧室</div><div class="status-chip alt">3D 场景实时预览</div></div><div class="room-3d"><div class="wall wall-back"></div><div class="wall wall-left"></div><div class="wall wall-right"></div><div class="window-panel"><span class="window-glow"></span></div><div class="floor-grid"></div><div id="sceneItems"></div><div id="packageAnchor"></div></div><div class="hero-copy"><div class="hero-badge">AI 陪伴装修模式</div><h2 id="heroTitle">一边看房间，一边快速加家具</h2><p id="heroTip">拍个身边的小物件，我帮你放进房间</p></div><button id="catBubble" class="cat-bubble"><span class="cat-avatar">猫</span><span id="catText" class="cat-text">点我开始布置</span></button></section><aside id="controlPanel" class="control-panel"><div class="panel-header"><div><p class="eyebrow">Quick Add</p><h3>快捷添加家具</h3></div><button id="togglePanel" class="ghost-button">展开</button></div><div id="recommendRow" class="bubble-row"></div><div class="claimed-header"><div><p class="eyebrow">你的拍照家具</p><h4>第二行最多保留 4 个待处理泡泡</h4></div><span id="slotCount" class="slot-count">0/4</span></div><div id="photoRow" class="bubble-row second-row"></div><button id="voiceTrigger" class="voice-trigger"><span class="voice-pulse"></span><div><strong>召唤语音设计助手</strong><small>替换家具 / 增加家具 / 调整位置 / 调整材质 / 调整布局</small></div></button></aside></main></div></div><div id="captureModal" class="modal-scrim"><div class="capture-card"><div class="camera-preview"><div class="capture-target"><span>对准身边物品</span></div></div><div class="capture-actions"><div><p class="eyebrow">拍照添加</p><h3>拍下任意物品，回到房间后生成快递箱</h3></div><div class="button-group"><button id="cancelCapture" class="ghost-button">取消</button><button id="confirmCapture" class="primary-button">模拟拍照完成</button></div></div></div></div><div id="voiceSheetWrap" class="voice-sheet-wrap"><div class="voice-sheet"><div class="voice-header"><div><p class="eyebrow">AI 语音设计助手</p><h3>保持房间可见，在场景里直接改</h3></div><button id="closeVoice" class="ghost-button">关闭</button></div><div id="chipRow" class="chip-row"></div><div id="chatStream" class="chat-stream"></div><div class="chat-composer"><button id="voiceMic" class="mic-button"><span class="mic-wave"></span>语音</button><input id="chatInput" placeholder="例如：加一个书桌，把床靠墙，换成奶油风" /><button id="sendChat" class="primary-button">发送</button></div></div></div>
+    <script>
+      const placements=[{id:"bed-center",zone:"center",left:"31%",top:"40%",width:"28%",depth:"19%",rotate:"-18deg"},{id:"bedside-left",zone:"bedside",left:"21%",top:"43%",width:"10%",depth:"10%",rotate:"-15deg"},{id:"bedside-right",zone:"bedside",left:"58%",top:"45%",width:"10%",depth:"10%",rotate:"-15deg"},{id:"left-wall-low",zone:"leftWall",left:"14%",top:"56%",width:"16%",depth:"12%",rotate:"-14deg"},{id:"left-wall-high",zone:"leftWall",left:"17%",top:"31%",width:"15%",depth:"11%",rotate:"-14deg"},{id:"right-wall-low",zone:"rightWall",left:"67%",top:"54%",width:"16%",depth:"12%",rotate:"-20deg"},{id:"right-wall-high",zone:"rightWall",left:"64%",top:"32%",width:"15%",depth:"11%",rotate:"-20deg"},{id:"window-bench",zone:"window",left:"45%",top:"24%",width:"18%",depth:"10%",rotate:"-18deg"},{id:"foot-center",zone:"foot",left:"40%",top:"61%",width:"20%",depth:"12%",rotate:"-18deg"}];
+      const starterFurniture=[{id:"starter-bed",name:"云朵软床",category:"床",style:"奶油原木",reason:"首页默认核心家具",zone:"center",tone:"#f5f0d8",accent:"#97f169",size:"lg",placementId:"bed-center",source:"starter"},{id:"starter-window",name:"暖光落地灯",category:"灯具",style:"暖感氛围",reason:"首页默认氛围光",zone:"rightWall",tone:"#ffe39d",accent:"#112824",size:"sm",placementId:"right-wall-high",source:"starter"}];
+      const recommendationPool=[{id:"nightstand",name:"圆角床头柜",category:"床头柜",style:"奶油原木",reason:"补齐床边收纳",zone:"bedside",tone:"#f3d7b6",accent:"#112824",size:"sm"},{id:"curtain",name:"柔纱窗帘",category:"窗帘",style:"轻透温柔",reason:"让房间更柔和",zone:"window",tone:"#eef8ef",accent:"#97f169",size:"md"},{id:"rug",name:"云感地毯",category:"地毯",style:"暖感层次",reason:"填补床尾空区",zone:"foot",tone:"#f9e7c8",accent:"#97f169",size:"lg"},{id:"desk",name:"漂浮书桌",category:"书桌",style:"轻学习角",reason:"完善学习区",zone:"leftWall",tone:"#d7f3df",accent:"#112824",size:"md"},{id:"chair",name:"豆豆单椅",category:"椅子",style:"轻松陪伴",reason:"给书桌配座位",zone:"leftWall",tone:"#ffe4c2",accent:"#112824",size:"sm"},{id:"plant",name:"猫薄荷绿植",category:"绿植",style:"自然点缀",reason:"给角落增加生命力",zone:"window",tone:"#d2f6c9",accent:"#0b3e35",size:"sm"},{id:"wardrobe",name:"拼色衣柜",category:"衣柜",style:"整洁收纳",reason:"补齐收纳大件",zone:"rightWall",tone:"#d9f1da",accent:"#112824",size:"lg"},{id:"art",name:"挂画组合",category:"装饰画",style:"轻艺术感",reason:"补足墙面层次",zone:"leftWall",tone:"#e8f7c3",accent:"#112824",size:"sm"},{id:"bench",name:"床尾长凳",category:"长凳",style:"酒店感",reason:"提升完整度",zone:"foot",tone:"#ead8b2",accent:"#112824",size:"md"},{id:"dresser",name:"奶油梳妆台",category:"梳妆台",style:"少女感",reason:"增加精致使用区",zone:"rightWall",tone:"#fae7df",accent:"#112824",size:"md"}];
+      const photoSamples=["马克杯边桌","行李箱矮柜","耳机收纳架","编织篮置物凳","香薰角几","玩偶抱枕凳"];
+      const quickChips=["换成奶油风","加一个书桌","把床靠墙","窗帘换浅一点","让房间更温馨"];
+      const state={sceneMode:"home",sceneItems:[...starterFurniture],recommendations:[],photoItems:[],chatMessages:[{id:nextId("chat"),role:"assistant",text:"我会保留当前 3D 房间视图，你可以直接说“加一个书桌”“换成奶油风”或“把床靠墙”。"}]};
+      function nextId(prefix){return `${prefix}-${Math.random().toString(36).slice(2,8)}`}
+      function buildRecommendations(scene,count=3){const categories=new Set(scene.map((item)=>item.category));return [...recommendationPool].sort((left,right)=>Number(categories.has(left.category))-Number(categories.has(right.category))).filter((item,index,array)=>array.findIndex((entry)=>entry.category===item.category)===index).slice(0,count)}
+      function choosePlacement(zone,usedIds){return placements.find((placement)=>placement.zone===zone&&!usedIds.has(placement.id))||placements.find((placement)=>!usedIds.has(placement.id))||null}
+      function refreshRecommendations(){state.recommendations=buildRecommendations(state.sceneItems)}
+      function renderScene(){const sceneItemsEl=document.getElementById("sceneItems");const packageAnchor=document.getElementById("packageAnchor");sceneItemsEl.innerHTML="";state.sceneItems.forEach((item)=>{const placement=placements.find((entry)=>entry.id===item.placementId);if(!placement)return;const block=document.createElement("div");block.className=`furniture-block size-${item.size}`;block.style.setProperty("--left",placement.left);block.style.setProperty("--top",placement.top);block.style.setProperty("--width",placement.width);block.style.setProperty("--depth",placement.depth);block.style.setProperty("--rotate",placement.rotate);block.style.setProperty("--tone",item.tone);block.style.setProperty("--accent",item.accent);block.innerHTML=`<div class="furniture-top"></div><div class="furniture-label"><strong>${item.name}</strong><span>${item.style}</span></div>`;sceneItemsEl.appendChild(block)});const activePackage=state.photoItems.find((item)=>item.status==="generating"||item.status==="ready");packageAnchor.innerHTML=activePackage?`<div class="package-box ${activePackage.status==="ready"?"ready":""}"><div class="package-lid"></div><div class="package-body"><strong>${activePackage.status==="ready"?"可签收":"生成中"}</strong><span>${activePackage.name}</span><small>${activePackage.status==="ready"?"点击第二行气泡签收":"AI 正在生成 3D 模型"}</small></div></div>`:""}
+      function renderHero(){const activePackage=state.photoItems.find((item)=>item.status==="generating"||item.status==="ready");document.getElementById("heroTitle").textContent=state.sceneMode==="home"?"一边看房间，一边快速加家具":"当前是快捷添加家具态";document.getElementById("heroTip").textContent=state.sceneMode==="home"?"拍个身边的小物件，我帮你放进房间":activePackage&&activePackage.status==="ready"?"快递做好啦，点一下签收，我帮你找好位置":"我刚根据房间状态换了一批更合适的家具";document.getElementById("roomScore").textContent=`${Math.min(100,28+state.sceneItems.length*10)}%`;document.getElementById("catText").textContent=state.sceneMode==="home"?"点我开始布置":"我在帮你盯着推荐"}
+      function renderPanel(){const controlPanel=document.getElementById("controlPanel");const togglePanel=document.getElementById("togglePanel");const catBubble=document.getElementById("catBubble");controlPanel.classList.toggle("visible",state.sceneMode==="quick");togglePanel.textContent=state.sceneMode==="home"?"展开":"收起";catBubble.classList.toggle("compact",state.sceneMode==="quick")}
+      function renderRecommendations(){const row=document.getElementById("recommendRow");row.innerHTML="";const action=document.createElement("button");action.className="bubble action";action.innerHTML=`<span class="bubble-icon">＋</span><span><strong>拍照添加</strong><small>生成现实物品 3D 模型</small></span>`;action.addEventListener("click",openCapture);row.appendChild(action);state.recommendations.forEach((item)=>{const button=document.createElement("button");button.className="bubble recommendation";button.innerHTML=`<span class="bubble-tag">${item.category}</span><strong>${item.name}</strong><small>${item.reason}</small>`;button.addEventListener("click",()=>addFurniture(item,"recommendation"));row.appendChild(button)})}
+      function renderPhotos(){const row=document.getElementById("photoRow");document.getElementById("slotCount").textContent=`${state.photoItems.length}/4`;row.innerHTML="";if(state.photoItems.length===0){const empty=document.createElement("div");empty.className="empty-slot";empty.textContent="拍个身边物品，第二行会在这里排队";row.appendChild(empty);return}state.photoItems.forEach((item)=>{const card=document.createElement("div");card.className=`bubble photo ${item.status}`;const label=item.status==="generating"?"生成中":item.status==="ready"?"可签收":"待摆放";const desc=item.status==="generating"?"快递箱建模中，大约 10 秒":item.status==="ready"?"先签收，再决定是否摆进房间":"点击摆放，或收入背包";card.innerHTML=`<span class="bubble-tag">${label}</span><strong>${item.name}</strong><small>${desc}</small><div class="photo-actions"></div>`;const actions=card.querySelector(".photo-actions");if(item.status==="ready"){const claim=document.createElement("button");claim.className="mini-button";claim.textContent="签收";claim.addEventListener("click",()=>{item.status="claimed";renderAll()});actions.appendChild(claim)}if(item.status==="claimed"){const place=document.createElement("button");place.className="mini-button";place.textContent="自动摆放";place.addEventListener("click",()=>placePhoto(item.id));actions.appendChild(place);const stash=document.createElement("button");stash.className="mini-button ghost";stash.textContent="收入背包";stash.addEventListener("click",()=>{state.photoItems=state.photoItems.filter((entry)=>entry.id!==item.id);renderAll()});actions.appendChild(stash)}row.appendChild(card)})}
+      function renderChat(){const chipRow=document.getElementById("chipRow");const chatStream=document.getElementById("chatStream");chipRow.innerHTML="";chatStream.innerHTML="";quickChips.forEach((chip)=>{const button=document.createElement("button");button.className="chip";button.textContent=chip;button.addEventListener("click",()=>applyIntent(chip));chipRow.appendChild(button)});state.chatMessages.forEach((message)=>{const bubble=document.createElement("div");bubble.className=`chat-bubble ${message.role}`;bubble.textContent=message.text;chatStream.appendChild(bubble)});chatStream.scrollTop=chatStream.scrollHeight}
+      function renderAll(){renderScene();renderHero();renderPanel();renderRecommendations();renderPhotos();renderChat()}
+      function addFurniture(template,source){const usedIds=new Set(state.sceneItems.map((item)=>item.placementId));const placement=choosePlacement(template.zone,usedIds);if(!placement)return;state.sceneItems.push({...template,placementId:placement.id,source});refreshRecommendations();renderAll()}
+      function placePhoto(itemId){const item=state.photoItems.find((entry)=>entry.id===itemId);if(!item)return;const usedIds=new Set(state.sceneItems.map((entry)=>entry.placementId));const placement=choosePlacement("foot",usedIds)||choosePlacement("leftWall",usedIds);if(!placement){window.alert("当前场景没有合适空位，建议先收入背包。");return}state.sceneItems.push({id:item.id,name:item.name,category:item.category,style:"现实灵感",reason:"由用户拍照生成",zone:"foot",tone:item.tone,accent:item.accent,size:"md",placementId:placement.id,source:"photo"});state.photoItems=state.photoItems.filter((entry)=>entry.id!==itemId);refreshRecommendations();renderAll()}
+      function openCapture(){if(state.photoItems.length>=4){window.alert("待处理物品已满 4 个，请先摆放或收入背包。");return}document.getElementById("captureModal").classList.add("visible")}
+      function closeCapture(){document.getElementById("captureModal").classList.remove("visible")}
+      function simulateCapture(){const index=Math.floor(Math.random()*photoSamples.length);const item={id:nextId("photo"),name:photoSamples[index],status:"generating",tone:["#ffdcb4","#d8f4ca","#f7e9ca","#dbf6ef"][index%4],accent:["#112824","#0b3e35","#97f169","#112824"][index%4],category:"用户图转 3D"};state.sceneMode="quick";state.photoItems.push(item);closeCapture();renderAll();window.setTimeout(()=>{const target=state.photoItems.find((entry)=>entry.id===item.id);if(!target)return;target.status="ready";renderAll()},6500)}
+      function openVoice(){document.getElementById("voiceSheetWrap").classList.add("visible")}
+      function closeVoice(){document.getElementById("voiceSheetWrap").classList.remove("visible")}
+      function applyIntent(rawText){const text=rawText.trim();if(!text)return;state.chatMessages.push({id:nextId("chat"),role:"user",text});const lowerText=text.toLowerCase();let assistantText="我已经记住这个需求了，我会先在当前房间里做一版最稳妥的调整。";if(text.includes("书桌")){const desk=recommendationPool.find((item)=>item.category==="书桌");if(desk)addFurniture(desk,"assistant");assistantText="我补了一张更轻盈的书桌，并把它放到了左侧学习区。"}else if(text.includes("奶油风")||text.includes("温馨")||lowerText.includes("cream")){state.sceneItems=state.sceneItems.map((item)=>item.category==="灯具"?{...item,tone:"#ffe7a8",accent:"#97f169"}:item);state.recommendations=[recommendationPool.find((item)=>item.category==="窗帘"),recommendationPool.find((item)=>item.category==="地毯"),recommendationPool.find((item)=>item.category==="装饰画")].filter(Boolean);assistantText="我会把空间调得更柔和：保留木感、提高暖光比例，并推荐更轻盈的软装。"}else if(text.includes("靠墙")||text.includes("调整布局")){state.sceneItems=state.sceneItems.map((item)=>item.category==="书桌"?{...item,placementId:"left-wall-high"}:item);assistantText="我先帮你整理了动线，把主要家具都贴近墙体，房间中间会更开阔。"}else if(text.includes("窗帘")){assistantText="我把窗边材质调浅了一些，让光感更柔软了。"}else{assistantText="我理解成“先保留功能布局，再增加一点温柔层次”。如果你愿意，我下一步可以继续替你加软装。"}state.chatMessages.push({id:nextId("chat"),role:"assistant",text:assistantText});document.getElementById("chatInput").value="";renderAll()}
+      document.getElementById("catBubble").addEventListener("click",()=>{state.sceneMode="quick";renderAll()});
+      document.getElementById("togglePanel").addEventListener("click",()=>{state.sceneMode=state.sceneMode==="home"?"quick":"home";renderAll()});
+      document.getElementById("cancelCapture").addEventListener("click",closeCapture);
+      document.getElementById("confirmCapture").addEventListener("click",simulateCapture);
+      document.getElementById("voiceTrigger").addEventListener("click",openVoice);
+      document.getElementById("closeVoice").addEventListener("click",closeVoice);
+      document.getElementById("voiceMic").addEventListener("click",()=>applyIntent("让房间更温馨"));
+      document.getElementById("sendChat").addEventListener("click",()=>applyIntent(document.getElementById("chatInput").value));
+      document.getElementById("chatInput").addEventListener("keydown",(event)=>{if(event.key==="Enter")applyIntent(event.target.value)});
+      refreshRecommendations();renderAll();
+    </script>
+  </body>
+</html>
